@@ -7,7 +7,7 @@ from aiogram.filters import BaseFilter
 API_TOKEN = '8734868063:AAHFBnYtCjYGvEZ9F65ucBx1l5bPvD4E7Y8'
 BOSS_ID = 115023072  # Telegram ID шефа
 
-bot = Bot(token=API_TOKEN)
+bot = taxibot(token=API_TOKEN)
 dp = Dispatcher()
 
 boss_messages = {}
