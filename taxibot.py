@@ -92,7 +92,7 @@ async def auto_reply_loop(message_id):
     boss_messages.pop(message_id, None)
 
 async def main():
-    print("[LOG] Бот запущен...")
+     print("[LOG] Бот запущен, API_TOKEN")
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
