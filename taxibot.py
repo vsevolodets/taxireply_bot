@@ -64,7 +64,6 @@ async def any_reply(message: Message):
 
         if replied_id in boss_messages:
 
-            # ❗ игнорируем самого шефа
             if message.from_user.id == BOSS_ID:
                 return
 
@@ -73,7 +72,6 @@ async def any_reply(message: Message):
             data = boss_messages[replied_id]
             data["replied"] = True
 
-            # 🧹 удаляем ВСЕ сообщения бота
             for msg_id in data["bot_replies"]:
                 try:
                     await bot.delete_message(
@@ -86,16 +84,12 @@ async def any_reply(message: Message):
             boss_messages.pop(replied_id, None)
 
 
-# 🔥 ВАЖНО: теперь тут удаление перед отправкой
 async def send_and_track(message_id, text):
     data = boss_messages.get(message_id)
     if not data:
         return
 
-    # 🧹 удаляем старые сообщения
-    if data["bot_replies"]:
-        print(f"[LOG] Удаляю {len(data['bot_replies'])} сообщений")
-
+    # удаляем старые сообщения
     for msg_id in data["bot_replies"]:
         try:
             await bot.delete_message(
@@ -127,7 +121,6 @@ async def auto_reply_loop(message_id):
     mentioned = data["mentioned_user"]
     is_alexey = mentioned == "@alexey_del"
 
-    # 🔁 День 1 — 10 напоминаний каждые 4 минуты
     for i in range(10):
         await asyncio.sleep(4 * 60)
 
@@ -141,7 +134,6 @@ async def auto_reply_loop(message_id):
 
         await send_and_track(message_id, text)
 
-    # 👤 День 2 только для Алексея
     if is_alexey:
         print("[LOG] Запускаем второй день для Алексея")
 
@@ -155,95 +147,6 @@ async def auto_reply_loop(message_id):
         if wait_seconds > 0:
             await asyncio.sleep(wait_seconds)
 
-        for i in range(10):
-            await asyncio.sleep(5 * 60)
-
-            data = boss_messages.get(message_id)
-            if not data or data["replied"]:
-                return
-
-            text = f"День 2. Напоминание {i+1}: ответа нет {get_mention(mentioned)}"
-            await send_and_track(message_id, text)
-
-    boss_messages.pop(message_id, None)
-
-
-async def main():
-    print("[LOG] Бот запущен")
-    await dp.start_polling(bot)
-
-
-if __name__ == "__main__":
-    asyncio.run(main())            data = boss_messages[replied_id]
-            data["replied"] = True
-
-            # 🧹 удаляем ВСЕ сообщения бота
-            for msg_id in data["bot_replies"]:
-                try:
-                    await bot.delete_message(
-                        chat_id=data["chat_id"],
-                        message_id=msg_id
-                    )
-                except:
-                    pass
-
-            boss_messages.pop(replied_id, None)
-
-
-async def send_and_track(message_id, text):
-    data = boss_messages.get(message_id)
-    if not data:
-        return
-
-    try:
-        sent = await bot.send_message(
-            chat_id=data["chat_id"],
-            text=text,
-            reply_to_message_id=message_id
-        )
-        data["bot_replies"].append(sent.message_id)
-    except Exception as e:
-        print(f"[ERROR] {e}")
-
-
-async def auto_reply_loop(message_id):
-    data = boss_messages.get(message_id)
-    if not data:
-        return
-
-    mentioned = data["mentioned_user"]
-    is_alexey = mentioned == "@alexey_del"
-
-    # 🔁 обычные напоминания (каждые 4 минут, 10 раз)
-    for i in range(10):
-        await asyncio.sleep(4 * 60)
-
-        data = boss_messages.get(message_id)
-        if not data or data["replied"]:
-            return
-
-        text = f"Напоминание {i+1}: ответа нет"
-        if mentioned:
-            text += f" {get_mention(mentioned)}"
-
-        await send_and_track(message_id, text)
-
-    # 👤 если это Алексей — делаем второй день
-    if is_alexey:
-        print("[LOG] Запускаем второй день для Алексея")
-
-        # ждём до следующего дня 10:00
-        now = datetime.now()
-        tomorrow_10 = datetime.combine(
-            now.date() + timedelta(days=1),
-            time(10, 0)
-        )
-
-        wait_seconds = (tomorrow_10 - now).total_seconds()
-        if wait_seconds > 0:
-            await asyncio.sleep(wait_seconds)
-
-        # ещё 10 напоминаний каждые 5 минут
         for i in range(10):
             await asyncio.sleep(5 * 60)
 
