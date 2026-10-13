@@ -29,6 +29,7 @@ TRACKED_TYPES = {
     "text", "photo", "video", "document", "audio", "voice", "video_note",
     "animation", "sticker", "poll", "location", "contact",
 }
+MIN_LENGTH = 5  # сообщения шефа короче не отслеживаем
 # короткие ответы шефа, на которые отвечать не нужно
 ACK_WORDS = {"ок", "ok", "окей", "оке", "okay", "ок спасибо", "ok спасибо"}
 MONTHS = [
@@ -420,6 +421,9 @@ async def boss_message(message: Message):
     reply_to = message.reply_to_message
     if reply_to and reply_to.from_user and reply_to.from_user.id == bot.id:
         await assign_fine(message)
+        return
+
+    if len((message.text or message.caption or "").strip()) < MIN_LENGTH:
         return
 
     print(f"[LOG] Сообщение шефа: {message.text or message.caption} ({message.message_id})")
