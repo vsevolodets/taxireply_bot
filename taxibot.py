@@ -423,10 +423,11 @@ async def boss_message(message: Message):
         await assign_fine(message)
         return
 
-    if len((message.text or message.caption or "").strip()) < MIN_LENGTH:
+    if message.content_type != "voice" and \
+            len((message.text or message.caption or "").strip()) < MIN_LENGTH:
         return
 
-    print(f"[LOG] Сообщение шефа: {message.text or message.caption} ({message.message_id})")
+    print(f"[LOG] Сообщение шефа: {message.text or message.caption or message.content_type} ({message.message_id})")
 
     user_id, user_name = extract_mention(message)
     # нет упоминания, но шеф ответил сотруднику — адресат он
