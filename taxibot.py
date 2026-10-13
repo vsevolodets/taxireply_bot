@@ -1,6 +1,7 @@
 import asyncio
 import html
 import os
+import re
 import sqlite3
 import time as systime
 from datetime import datetime, timedelta, time
@@ -13,7 +14,7 @@ from aiogram.types import Message
 API_TOKEN = os.environ["BOT_TOKEN"]
 BOSS_ID = int(os.getenv("BOSS_ID", "115023072"))
 RENT_CHAT_ID = int(os.getenv("RENT_CHAT_ID", "-1002734746695"))  # чат отдела аренды для отчета
-DB_PATH = os.getenv("DB_PATH", "taxibot.db")
+DB_PATH = os.getenv("DB_PATH") or os.path.join(os.getenv("RAILWAY_VOLUME_MOUNT_PATH", "."), "taxibot.db")
 
 MSK = ZoneInfo("Europe/Moscow")
 ALEXEY = "@alexey_del"
@@ -28,6 +29,8 @@ TRACKED_TYPES = {
     "text", "photo", "video", "document", "audio", "voice", "video_note",
     "animation", "sticker", "poll", "location", "contact",
 }
+# короткие ответы шефа, на которые отвечать не нужно
+ACK_WORDS = {"ок", "ok", "окей", "оке", "okay", "ок спасибо", "ok спасибо"}
 MONTHS = [
     "январь", "февраль", "март", "апрель", "май", "июнь",
     "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь",
@@ -121,6 +124,11 @@ def delete_tracked(row):
 class BossFilter(BaseFilter):
     async def __call__(self, message: Message) -> bool:
         return message.from_user is not None and message.from_user.id == BOSS_ID
+
+
+def is_ack(message: Message):
+    text = re.sub(r"[^\w\s]", " ", (message.text or "").lower())
+    return " ".join(text.split()) in ACK_WORDS
 
 
 def user_html(user_id, user_name):
@@ -406,7 +414,7 @@ async def boss_message(message: Message):
         return
     if message.content_type not in TRACKED_TYPES:
         return
-    if (message.text or "").startswith("/"):
+    if (message.text or "").startswith("/") or is_ack(message):
         return
 
     reply_to = message.reply_to_message
